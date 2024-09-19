@@ -18,8 +18,10 @@ func NewServer(app *fiber.App, conf *config.Config, db *supabase.Client) ServerI
 }
 
 func (s *Server) Run() {
-	if err := s.app.Listen(fmt.Sprintf(":%s", s.config.Server.Port)); err != nil {
+	s.app = initializeRoutes(s.app)
+	if err := s.app.Listen(fmt.Sprintf(":%d", s.config.Server.Port)); err != nil {
 		fmt.Println("error starting server:", err)
 		return
 	}
+	fmt.Println("tes")
 }

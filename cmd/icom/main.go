@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/byeolbyeolbyeoI/icom/config"
 	"github.com/byeolbyeolbyeoI/icom/database"
 	"github.com/byeolbyeolbyeoI/icom/server"
@@ -13,5 +14,7 @@ func main() {
 	dbInstance := database.NewDatabase(conf)
 	db := dbInstance.GetDatabase()
 
-	server.NewServer(app, conf, db)
+	serv := server.NewServer(app, conf, db)
+	fmt.Println("listening on :8080")
+	serv.Run()
 }
