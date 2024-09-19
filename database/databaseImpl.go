@@ -19,6 +19,7 @@ func NewDatabase(conf *config.Config) DatabaseInstance {
 
 	return &Database{client: client}
 }
+
 func (d *Database) GetDatabase() *supabase.Client {
 	return d.client
 }

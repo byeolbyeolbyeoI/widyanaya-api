@@ -10,7 +10,8 @@ import (
 func main() {
 	app := fiber.New()
 	conf := config.GetConfig()
-	db := database.NewDatabase(conf)
+	dbInstance := database.NewDatabase(conf)
+	db := dbInstance.GetDatabase()
 
-	server.NewServer(app, conf, database)
+	server.NewServer(app, conf, db)
 }
