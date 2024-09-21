@@ -1,12 +1,10 @@
 package handler
 
 import (
-	"fmt"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/helper"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/model"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/service"
 	"github.com/gofiber/fiber/v2"
-	"strings"
 )
 
 type UserHandler struct {
@@ -22,42 +20,66 @@ func NewUserHandler(s service.UserServiceInstance, h helper.HelperInstance) User
 }
 
 func (u *UserHandler) SignUp(c *fiber.Ctx) error {
-	// take input
 	var user model.User
 	err := c.BodyParser(&user)
 	if err != nil {
 		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
 	}
 
-	// validate it
 	if errs := u.helper.Validate(user); len(errs) > 0 && errs[0].Error {
-		errMsgs := make([]string, 0)
+		errMsg := u.helper.HandleValidationError(errs)
 
-		for _, e := range errs {
-			errMsgs = append(errMsgs, fmt.Sprintf(
-				"[%s]: '%v' | needs to implement '%s'",
-				e.FailedField,
-				e.Value,
-				e.Tag,
-			))
-		}
-
-		return u.helper.Response(c, fiber.StatusBadRequest, false, strings.Join(errMsgs, " and "), nil)
+		return u.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
 	}
 
-	// check if exists, later
+	exists, err := u.service.IsExist(user.Username)
+	if err != nil {
+		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
 
-	// hash it
+	if exists {
+		return u.helper.Response(c, fiber.StatusConflict, false, "invalid username or password", nil)
+	}
+
 	user.Password, err = u.service.HashPassword(user.Password)
 	if err != nil {
 		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
 	}
 
-	// create it
 	err = u.service.CreateUser(user)
 	if err != nil {
 		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
 	}
 
 	return u.helper.Response(c, fiber.StatusOK, true, "user signed up successfully", nil)
+}
+
+func (u *UserHandler) Login(c *fiber.Ctx) error {
+	var user model.User
+	err := c.BodyParser(&user)
+	if err != nil {
+		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := u.helper.Validate(user); len(errs) > 0 && errs[0].Error {
+		errMsg := u.helper.HandleValidationError(errs)
+
+		return u.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	exists, err := u.service.IsExist(user.Username)
+	if err != nil {
+		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if !exists {
+		return u.helper.Response(c, fiber.StatusConflict, false, "invalid username or password", nil)
+	}
+
+	err = u.service.CheckPassword(user.Username, user.Password)
+	if err != nil { // pass salah
+		return u.helper.Response(c, fiber.StatusUnauthorized, false, "invalid username or password", nil)
+	}
+
+	return u.helper.Response(c, fiber.StatusOK, true, "user logged in successfully", nil)
 }
