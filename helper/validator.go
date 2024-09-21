@@ -1,6 +1,10 @@
 package helper
 
-import "github.com/go-playground/validator/v10"
+import (
+	"fmt"
+	"github.com/go-playground/validator/v10"
+	"strings"
+)
 
 type ValidationError struct {
 	Error       bool
@@ -32,18 +36,24 @@ func (h *Helper) Validate(data interface{}) []ValidationError {
 	return validationErrors
 }
 
+func (h *Helper) HandleValidationError(errs []ValidationError) string {
+	errMsgs := make([]string, 0)
+
+	for _, err := range errs {
+		errMsgs = append(errMsgs, fmt.Sprintf(
+			"[%s]: '%v' | Needs to implement '%s'",
+			err.FailedField,
+			err.Value,
+			err.Tag,
+		))
+	}
+
+	return strings.Join(errMsgs, " and ")
+}
+
 /*
 if errs := myValidator.Validate(user); len(errs) > 0 && errs[0].Error {
-			errMsgs := make([]string, 0)
 
-			for _, err := range errs {
-				errMsgs = append(errMsgs, fmt.Sprintf(
-					"[%s]: '%v' | Needs to implement '%s'",
-					err.FailedField,
-					err.Value,
-					err.Tag,
-				))
-			}
 
 			return &fiber.Error{
 				Code:    fiber.ErrBadRequest.Code,
