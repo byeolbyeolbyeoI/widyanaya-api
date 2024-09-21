@@ -1,1 +1,4 @@
 config/config.yaml
+tmp
+.air.toml
+bin

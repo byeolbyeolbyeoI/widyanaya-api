@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/byeolbyeolbyeoI/icom/config"
-	"github.com/byeolbyeolbyeoI/icom/database"
-	"github.com/byeolbyeolbyeoI/icom/server"
+	"github.com/byeolbyeolbyeoI/widyanaya-api/config"
+	"github.com/byeolbyeolbyeoI/widyanaya-api/database"
+	"github.com/byeolbyeolbyeoI/widyanaya-api/server"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -16,5 +16,5 @@ func main() {
 
 	serv := server.NewServer(app, conf, db)
 	fmt.Println("listening on :8080")
-	serv.Run()
+	serv.Start()
 }

@@ -1,7 +1,9 @@
 package database
 
-import "github.com/supabase-community/supabase-go"
+import (
+	supa "github.com/nedpals/supabase-go"
+)
 
 type DatabaseInstance interface {
-	GetDatabase() *supabase.Client
+	GetDatabase() *supa.Client
 }

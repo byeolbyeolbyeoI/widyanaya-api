@@ -1,11 +1,12 @@
 package server
 
-import "github.com/gofiber/fiber/v2"
+import (
+	userHandler "github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/handler"
+	"github.com/gofiber/fiber/v2"
+)
 
-func initializeRoutes(app *fiber.App) *fiber.App {
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+func initializeRoutes(app *fiber.App, userHandler userHandler.UserHandlerInstance) *fiber.App {
+	app.Post("/signup", userHandler.SignUp)
 
 	return app
 }

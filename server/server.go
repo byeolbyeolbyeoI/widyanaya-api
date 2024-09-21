@@ -1,5 +1,5 @@
 package server
 
 type ServerInstance interface {
-	Run()
+	Start()
 }
