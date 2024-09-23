@@ -1,14 +1,14 @@
 package model
 
-// profile terkait jurnal dan publikasi
-// pr, supabase harus sama dengan json name
+import "time"
+
 type User struct {
-	Id        int    `json:"id,omitempty"`
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"passwordHash"`
-	CreatedAt string `json:"createdAt,omitempty"`
-	UpdatedAt string `json:"updatedAt,omitempty"`
+	ID           int64     `json:"id"`
+	Username     string    `json:"username" validate:"required,max=50"`
+	Email        string    `json:"email" validate:"required,email,max=100"`
+	PasswordHash string    `json:"password_hash" validate:"required,max=255"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
 type UserCredential struct {

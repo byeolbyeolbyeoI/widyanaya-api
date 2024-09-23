@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"fmt"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/helper"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/model"
 	supa "github.com/nedpals/supabase-go"
@@ -18,6 +17,8 @@ func NewUserRepository(s *supa.Client, h helper.HelperInstance) UserRepositoryIn
 		helper: h,
 	}
 }
+
+// refactor struct declare tiap handler
 
 func (u *UserRepository) CreateUser(user model.User) error {
 	var empty []map[string]interface{}
@@ -69,7 +70,6 @@ func (u *UserRepository) GetPassword(username string) (string, error) {
 	// something like fmt.Errorf() n then the upper layer checks with error.Is() (kind of)
 	// for now this aight
 	if len(result) == 0 {
-		fmt.Println(err.Error())
 		return "", nil
 	}
 
