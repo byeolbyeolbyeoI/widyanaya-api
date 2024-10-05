@@ -25,7 +25,7 @@ func (u *UserRepository) CreateUser(user model.User) error {
 
 	err := u.client.DB.From("users").Insert(map[string]interface{}{
 		"username":      user.Username,
-		"password_hash": user.Password,
+		"password_hash": user.PasswordHash,
 		"email":         user.Email,
 	}).Execute(&empty)
 	if err != nil {

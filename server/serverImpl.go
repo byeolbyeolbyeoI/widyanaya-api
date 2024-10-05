@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/config"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/helper"
+	publicationHandler "github.com/byeolbyeolbyeoI/widyanaya-api/internal/publication/handler"
+	publicationRepo "github.com/byeolbyeolbyeoI/widyanaya-api/internal/publication/repository"
+	publicationService "github.com/byeolbyeolbyeoI/widyanaya-api/internal/publication/service"
 	userHandler "github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/handler"
 	userRepo "github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/repository"
 	userService "github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/service"
@@ -28,7 +31,11 @@ func (s *Server) Start() {
 	userServiceInstance := userService.NewUserService(userRepoInstance, s.helper)
 	userHandlerInstance := userHandler.NewUserHandler(userServiceInstance, s.helper)
 
-	s.app = initializeRoutes(s.app, userHandlerInstance)
+	publicationRepoInstance := publicationRepo.NewPublicationRepository(s.db, s.helper)
+	publicationServiceInstance := publicationService.NewPublicationService(publicationRepoInstance, s.helper)
+	publicationHandlerInstance := publicationHandler.NewPublicationHandler(publicationServiceInstance, s.helper)
+
+	s.app = initializeRoutes(s.app, userHandlerInstance, publicationHandlerInstance)
 	if err := s.app.Listen(fmt.Sprintf(":%d", s.config.Server.Port)); err != nil {
 		fmt.Println("error starting server:", err)
 		return

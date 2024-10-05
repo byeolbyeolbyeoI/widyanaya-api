@@ -41,7 +41,7 @@ func (u *UserHandler) SignUp(c *fiber.Ctx) error {
 		return u.helper.Response(c, fiber.StatusConflict, false, "invalid username or password", nil)
 	}
 
-	user.Password, err = u.service.HashPassword(user.Password)
+	user.PasswordHash, err = u.service.HashPassword(user.PasswordHash)
 	if err != nil {
 		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
 	}
@@ -76,7 +76,7 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
 		return u.helper.Response(c, fiber.StatusConflict, false, "invalid username or password", nil)
 	}
 
-	err = u.service.CheckPassword(user.Username, user.Password)
+	err = u.service.CheckPassword(user.Username, user.PasswordHash)
 	if err != nil { // pass salah
 		return u.helper.Response(c, fiber.StatusUnauthorized, false, "invalid username or password", nil)
 	}
