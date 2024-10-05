@@ -23,7 +23,12 @@ func initializeRoutes(app *fiber.App, userHandler userHandler.UserHandlerInstanc
 	app.Post("/paper", publicationHandler.AddPaper)
 	app.Delete("/paper/:id", publicationHandler.DeletePaperById)
 
+	app.Get("/competitions", publicationHandler.GetCompetitions)
+	app.Get("/competitions/:category_id", publicationHandler.GetCompetitionsByCategoryId)
+	app.Get("/competition/:id", publicationHandler.GetCompetitionById)
 	app.Post("/competition", publicationHandler.AddCompetition)
+	app.Put("/competition", publicationHandler.UpdateCompetition)
+	app.Delete("/competition/:id", publicationHandler.DeleteCompetitionById)
 
 	return app
 }

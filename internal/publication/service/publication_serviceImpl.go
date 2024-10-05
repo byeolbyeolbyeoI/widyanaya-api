@@ -220,8 +220,70 @@ func (u *PublicationService) IsCompetitionExists(id int) error {
 	return nil
 }
 
+func (u *PublicationService) IsCompetitionsExist() error {
+	err := u.repo.IsCompetitionsExist()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) GetCompetitions() ([]model.Competition, error) {
+	competitions, err := u.repo.GetCompetitions()
+	if err != nil {
+		return nil, err
+	}
+
+	return competitions, nil
+}
+func (u *PublicationService) GetCompetitionById(id int) (model.Competition, error) {
+	competition, err := u.repo.GetCompetitionById(id)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	return competition, nil
+}
+
+func (u *PublicationService) IsCompetitionCategoryExists(categoryId int) error {
+	err := u.repo.IsCompetitionCategoryExists(categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) IsCompetitionsExistByCategoryId(categoryId int) error {
+	err := u.repo.IsCompetitionsExistByCategoryId(categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) GetCompetitionsByCategoryId(categoryId int) ([]model.Competition, error) {
+	competitions, err := u.repo.GetCompetitionsByCategoryId(categoryId)
+	if err != nil {
+		return nil, err
+	}
+
+	return competitions, nil
+}
+
 func (u *PublicationService) AddCompetition(competition model.Competition) error {
 	err := u.repo.AddCompetition(competition)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) UpdateCompetition(competition model.UpdatedCompetition) error {
+	err := u.repo.UpdateCompetition(competition)
 	if err != nil {
 		return err
 	}

@@ -341,6 +341,85 @@ func (p *PublicationHandler) DeletePaperById(c *fiber.Ctx) error {
 	return p.helper.Response(c, fiber.StatusOK, true, "paper deleted successfully", nil)
 }
 
+func (p *PublicationHandler) GetCompetitions(c *fiber.Ctx) error {
+	err := p.service.IsCompetitionsExist()
+	if err != nil {
+		if errors.Is(err, helper.ErrCompetitionNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	competitions, err := p.service.GetCompetitions()
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	sort.Slice(competitions, func(i int, j int) bool {
+		return competitions[i].OpeningDate.Before(competitions[j].OpeningDate)
+	})
+
+	return p.helper.Response(c, fiber.StatusOK, true, "competitions retrieved successfully", competitions)
+}
+
+func (p *PublicationHandler) GetCompetitionById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsCompetitionExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrCompetitionNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	competition, err := p.service.GetCompetitionById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "competition retrieved successfully", competition)
+}
+
+func (p *PublicationHandler) GetCompetitionsByCategoryId(c *fiber.Ctx) error {
+	strCategoryId := c.Params("category_id")
+	categoryId, err := strconv.Atoi(strCategoryId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsCompetitionCategoryExists(categoryId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+	}
+
+	err = p.service.IsCompetitionsExistByCategoryId(categoryId)
+	if err != nil {
+		if errors.Is(err, helper.ErrPublicationNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	competitions, err := p.service.GetCompetitionsByCategoryId(categoryId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	sort.Slice(competitions, func(i int, j int) bool {
+		return competitions[i].OpeningDate.Before(competitions[j].OpeningDate)
+	})
+
+	return p.helper.Response(c, fiber.StatusOK, true, "competitions retrieved successfully", competitions)
+}
+
 func (p *PublicationHandler) AddCompetition(c *fiber.Ctx) error {
 	var competition model.Competition
 	err := c.BodyParser(&competition)
@@ -354,10 +433,71 @@ func (p *PublicationHandler) AddCompetition(c *fiber.Ctx) error {
 		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
 	}
 
+	err = p.service.IsCompetitionCategoryExists(competition.CompetitionCategoryId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+	}
+
+	err = p.service.IsPublisherExists(competition.PublisherId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+	}
+
 	err = p.service.AddCompetition(competition)
 	if err != nil {
 		return p.helper.Response(c, fiber.StatusBadRequest, false, err.Error(), nil)
 	}
 
 	return p.helper.Response(c, fiber.StatusOK, true, "competition added successfully", nil)
+}
+
+func (p *PublicationHandler) UpdateCompetition(c *fiber.Ctx) error {
+	var competition model.UpdatedCompetition
+	err := c.BodyParser(&competition)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(competition); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	err = p.service.IsCompetitionExists(competition.Id)
+	if err != nil {
+		if errors.Is(err, helper.ErrCompetitionNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.UpdateCompetition(competition)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusBadRequest, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "competition updated successfully", nil)
+}
+
+func (p *PublicationHandler) DeleteCompetitionById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+
+	err = p.service.IsCompetitionExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrCompetitionNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.DeleteCompetitionById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "competition deleted successfully", nil)
 }

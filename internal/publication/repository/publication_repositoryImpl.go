@@ -466,6 +466,161 @@ func (u *PublicationRepository) IsCompetitionExists(id int) error {
 	return nil
 }
 
+func (u *PublicationRepository) IsCompetitionsExist() error {
+	var res []map[string]interface{}
+	err := u.client.DB.From("competitions").Select("id").Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		return helper.ErrCompetitionNotFound
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) parseCompetitions(unparsedCompetitions []model.UnparsedCompetition) ([]model.Competition, error) {
+	var competitions []model.Competition
+	for _, pub := range unparsedCompetitions {
+		openingDate, err := time.Parse("2006-01-02", pub.OpeningDate)
+		if err != nil {
+			return nil, err
+		}
+		closingDate, err := time.Parse("2006-01-02", pub.ClosingDate)
+		if err != nil {
+			return nil, err
+		}
+
+		date, err := time.Parse("2006-01-02", pub.Date)
+		if err != nil {
+			return nil, err
+		}
+
+		competitions = append(competitions, model.Competition{
+			Id:                    pub.Id,
+			Name:                  pub.Name,
+			Description:           pub.Description,
+			OpeningDate:           openingDate,
+			ClosingDate:           closingDate,
+			Date:                  date,
+			Fees:                  pub.Fees,
+			CompetitionCategoryId: pub.CompetitionCategoryId,
+			PublisherId:           pub.PublisherId,
+		})
+	}
+
+	return competitions, nil
+}
+
+func parseCompetition(unparsedCompetition model.UnparsedCompetition) (model.Competition, error) {
+	var competition model.Competition
+	openingDate, err := time.Parse("2006-01-02", unparsedCompetition.OpeningDate)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	closingDate, err := time.Parse("2006-01-02", unparsedCompetition.ClosingDate)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	date, err := time.Parse("2006-01-02", unparsedCompetition.Date)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	competition = model.Competition{
+		Id:                    unparsedCompetition.Id,
+		Name:                  unparsedCompetition.Name,
+		Description:           unparsedCompetition.Description,
+		OpeningDate:           openingDate,
+		ClosingDate:           closingDate,
+		Date:                  date,
+		Fees:                  unparsedCompetition.Fees,
+		CompetitionCategoryId: unparsedCompetition.CompetitionCategoryId,
+		PublisherId:           unparsedCompetition.PublisherId,
+	}
+
+	return competition, nil
+}
+
+func (u *PublicationRepository) GetCompetitions() ([]model.Competition, error) {
+	var unparsedCompetition []model.UnparsedCompetition
+	err := u.client.DB.From("competitions").Select("*").Execute(&unparsedCompetition)
+	if err != nil {
+		return nil, err
+	}
+
+	competitions, err := u.parseCompetitions(unparsedCompetition)
+	if err != nil {
+		return nil, err
+	}
+
+	return competitions, nil
+}
+
+func (u *PublicationRepository) GetCompetitionById(id int) (model.Competition, error) {
+	stringId := strconv.Itoa(id)
+	var unparsedCompetition model.UnparsedCompetition
+	err := u.client.DB.From("competitions").Select("*").Single().Eq("id", stringId).Execute(&unparsedCompetition)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	competition, err := parseCompetition(unparsedCompetition)
+	if err != nil {
+		return model.Competition{}, err
+	}
+
+	return competition, nil
+}
+
+func (u *PublicationRepository) IsCompetitionCategoryExists(categoryId int) error {
+	strCategoryId := strconv.Itoa(categoryId)
+	var id map[string]interface{}
+	err := u.client.DB.From("competition_categories").Select("id").Single().Eq("id", strCategoryId).Execute(&id)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrCategoryNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsCompetitionsExistByCategoryId(categoryId int) error {
+	var res []map[string]interface{}
+	strCategoryId := strconv.Itoa(categoryId)
+	err := u.client.DB.From("competitions").Select("id").Eq("competition_category_id", strCategoryId).Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		return helper.ErrCompetitionNotFound
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) GetCompetitionsByCategoryId(categoryId int) ([]model.Competition, error) {
+	strCategoryId := strconv.Itoa(categoryId)
+	var unparsedCompetitions []model.UnparsedCompetition
+	err := u.client.DB.From("competitions").Select("*").Eq("competition_category_id", strCategoryId).Execute(&unparsedCompetitions)
+	if err != nil {
+		return nil, err
+	}
+
+	competitions, err := u.parseCompetitions(unparsedCompetitions)
+	if err != nil {
+		return nil, err
+	}
+
+	return competitions, nil
+}
+
 func (u *PublicationRepository) AddCompetition(competition model.Competition) error {
 	var empty []map[string]interface{}
 
@@ -479,6 +634,26 @@ func (u *PublicationRepository) AddCompetition(competition model.Competition) er
 		"competition_category_id": competition.CompetitionCategoryId,
 		"publisher_id":            competition.PublisherId,
 	}).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) UpdateCompetition(competition model.UpdatedCompetition) error {
+	var empty []map[string]interface{}
+	id := strconv.Itoa(competition.Id)
+	err := u.client.DB.From("competitions").Update(map[string]interface{}{
+		"name":                    competition.Name,
+		"description":             competition.Description,
+		"opening_date":            competition.OpeningDate,
+		"closing_date":            competition.ClosingDate,
+		"date":                    competition.Date,
+		"fees":                    competition.Fees,
+		"competition_category_id": competition.CompetitionCategoryId,
+		"publisher_id":            competition.PublisherId,
+	}).Eq("id", id).Execute(&empty)
 	if err != nil {
 		return err
 	}

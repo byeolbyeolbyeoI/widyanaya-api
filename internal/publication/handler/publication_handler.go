@@ -16,5 +16,10 @@ type PublicationHandlerInstance interface {
 	UpdatePaper(c *fiber.Ctx) error
 	DeletePaperById(c *fiber.Ctx) error
 
+	GetCompetitions(c *fiber.Ctx) error
+	GetCompetitionById(c *fiber.Ctx) error
+	GetCompetitionsByCategoryId(c *fiber.Ctx) error
 	AddCompetition(c *fiber.Ctx) error
+	UpdateCompetition(c *fiber.Ctx) error
+	DeleteCompetitionById(c *fiber.Ctx) error
 }

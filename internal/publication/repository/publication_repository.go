@@ -31,7 +31,14 @@ type PublicationRepositoryInstance interface {
 	DeletePaperFragmentById(int) error
 
 	IsCompetitionExists(int) error
+	IsCompetitionCategoryExists(int) error
+	IsCompetitionsExist() error
+	IsCompetitionsExistByCategoryId(int) error
+	GetCompetitions() ([]model.Competition, error)
+	GetCompetitionById(int) (model.Competition, error)
+	GetCompetitionsByCategoryId(int) ([]model.Competition, error)
 	AddCompetition(model.Competition) error
+	UpdateCompetition(model.UpdatedCompetition) error
 	DeleteCompetitionById(int) error
 
 	IsPublicationRequestExists(int) error
