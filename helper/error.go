@@ -15,3 +15,6 @@ var ErrCompetitionNotFound = errors.New("competition not found")
 
 var ErrPublisherNotFound = errors.New("publisher not found")
 var ErrOwnerNotFound = errors.New("owner not found")
+var ErrReferenceFormatNotFound = errors.New("reference format not found")
+var ErrRequesterNotFound = errors.New("requester not found")
+var ErrMetadataNotFound = errors.New("metadata not found")

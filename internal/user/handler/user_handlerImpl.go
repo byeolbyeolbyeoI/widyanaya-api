@@ -1,21 +1,26 @@
 package handler
 
 import (
+	"github.com/byeolbyeolbyeoI/widyanaya-api/config"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/helper"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/model"
 	"github.com/byeolbyeolbyeoI/widyanaya-api/internal/user/service"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
+	"time"
 )
 
 type UserHandler struct {
 	service service.UserServiceInstance
 	helper  helper.HelperInstance
+	config  *config.Config
 }
 
-func NewUserHandler(s service.UserServiceInstance, h helper.HelperInstance) UserHandlerInstance {
+func NewUserHandler(s service.UserServiceInstance, h helper.HelperInstance, c *config.Config) UserHandlerInstance {
 	return &UserHandler{
 		service: s,
 		helper:  h,
+		config:  c,
 	}
 }
 
@@ -55,7 +60,7 @@ func (u *UserHandler) SignUp(c *fiber.Ctx) error {
 }
 
 func (u *UserHandler) Login(c *fiber.Ctx) error {
-	var user model.User
+	var user model.UserCredential
 	err := c.BodyParser(&user)
 	if err != nil {
 		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
@@ -81,5 +86,17 @@ func (u *UserHandler) Login(c *fiber.Ctx) error {
 		return u.helper.Response(c, fiber.StatusUnauthorized, false, "invalid username or password", nil)
 	}
 
-	return u.helper.Response(c, fiber.StatusOK, true, "user logged in successfully", nil)
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"aud":     "widyanaya-api",
+		"iss":     "widyanaya",
+		"subject": user.Username,
+		"exp":     time.Now().Add(time.Hour * 24 * 30).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte(u.config.JWT.Secret))
+	if err != nil {
+		return u.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return u.helper.Response(c, fiber.StatusOK, true, "user logged in successfully", tokenString)
 }

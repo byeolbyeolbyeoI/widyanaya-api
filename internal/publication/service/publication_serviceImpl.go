@@ -202,14 +202,6 @@ func (u *PublicationService) AddPaperFragment(fragment model.PaperFragment) erro
 
 	return nil
 }
-func (u *PublicationService) DeletePaperFragmentById(id int) error {
-	err := u.repo.DeletePaperFragmentById(id)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (u *PublicationService) IsCompetitionExists(id int) error {
 	err := u.repo.IsCompetitionExists(id)
@@ -309,8 +301,188 @@ func (u *PublicationService) IsPublicationRequestExists(id int) error {
 	return nil
 }
 
+func (u *PublicationService) IsPaperFragmentsExist() error {
+	err := u.repo.IsPaperFragmentsExist()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) GetPaperFragments() ([]model.PaperFragment, error) {
+	fragments, err := u.repo.GetPaperFragments()
+	if err != nil {
+		return nil, err
+	}
+
+	return fragments, nil
+}
+
+func (u *PublicationService) GetPaperFragmentById(id int) (model.PaperFragment, error) {
+	fragment, err := u.repo.GetPaperFragmentById(id)
+	if err != nil {
+		return model.PaperFragment{}, err
+	}
+
+	return fragment, nil
+}
+
+func (u *PublicationService) IsPaperFragmentCategoryExists(categoryId int) error {
+	err := u.repo.IsPaperFragmentCategoryExists(categoryId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) UpdatePaperFragment(fragment model.UpdatedPaperFragment) error {
+	err := u.repo.UpdatePaperFragment(fragment)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) DeletePaperFragmentById(id int) error {
+	err := u.repo.DeletePaperFragmentById(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) IsPublicationRequestsExist() error {
+	err := u.repo.IsPublicationRequestsExist()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) GetPublicationRequests() ([]model.PublicationRequest, error) {
+	request, err := u.repo.GetPublicationRequests()
+	if err != nil {
+		return nil, err
+	}
+
+	return request, nil
+}
+
+func (u *PublicationService) GetPublicationRequestById(id int) (model.PublicationRequest, error) {
+	request, err := u.repo.GetPublicationRequestById(id)
+	if err != nil {
+		return model.PublicationRequest{}, err
+	}
+
+	return request, nil
+}
+
+func (u *PublicationService) AddPublicationRequest(request model.PublicationRequest) error {
+	err := u.repo.AddPublicationRequest(request)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) UpdatePublicationRequest(req model.UpdatedPublicationRequest) error {
+	err := u.repo.UpdatePublicationRequest(req)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (u *PublicationService) DeletePublicationRequestById(id int) error {
 	err := u.repo.DeletePublicationRequestById(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) IsReferenceFormatExists(id int) error {
+	err := u.repo.IsReferenceFormatExists(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) IsMetadataExists(id int) error {
+	err := u.repo.IsMetadataExists(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) IsMetadatasExist() error {
+	err := u.repo.IsMetadatasExist()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) GetMetadatas() ([]model.Metadata, error) {
+	metadatas, err := u.repo.GetMetadatas()
+	if err != nil {
+		return nil, err
+	}
+
+	return metadatas, nil
+}
+
+func (u *PublicationService) GetMetadataById(id int) (model.Metadata, error) {
+	metadata, err := u.repo.GetMetadataById(id)
+	if err != nil {
+		return model.Metadata{}, err
+	}
+
+	return metadata, nil
+}
+
+func (u *PublicationService) IsRequesterExists(id int) error {
+	err := u.repo.IsRequesterExists(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) DeleteMetadataById(id int) error {
+	err := u.repo.DeleteMetadataById(id)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) AddMetadata(metadata model.Metadata) error {
+	err := u.repo.AddMetadata(metadata)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationService) UpdateMetadata(metadata model.UpdatedMetadata) error {
+	err := u.repo.UpdateMetadata(metadata)
 	if err != nil {
 		return err
 	}

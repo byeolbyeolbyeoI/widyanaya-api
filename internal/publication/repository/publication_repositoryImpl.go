@@ -408,37 +408,6 @@ func (u *PublicationRepository) DeletePaperById(id int) error {
 	return nil
 }
 
-func (u *PublicationRepository) IsPaperFragmentExists(id int) error {
-	strId := strconv.Itoa(id)
-	var context map[string]interface{}
-	err := u.client.DB.From("paper_fragments").Select("context").Single().Eq("id", strId).Execute(&context)
-	if err != nil {
-		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
-			return helper.ErrPaperFragmentNotFound
-		}
-		return err
-	}
-
-	return nil
-}
-
-func (u *PublicationRepository) AddPaperFragment(fragment model.PaperFragment) error {
-	var empty []map[string]interface{}
-
-	err := u.client.DB.From("paper_fragments").Insert(map[string]interface{}{
-		"context":              fragment.Context,
-		"created_at":           fragment.CreatedAt,
-		"updated_at":           fragment.UpdatedAt,
-		"fragment_category_id": fragment.FragmentCategoryId,
-		"paper_id":             fragment.PaperId,
-	}).Execute(&empty)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (u *PublicationRepository) DeletePaperFragmentById(id int) error {
 	strId := strconv.Itoa(id)
 	var res []map[string]interface{}
@@ -676,8 +645,8 @@ func (u *PublicationRepository) DeleteCompetitionById(id int) error {
 
 func (u *PublicationRepository) IsPublicationRequestExists(id int) error {
 	strId := strconv.Itoa(id)
-	var title map[string]interface{}
-	err := u.client.DB.From("publication_requests").Select("name").Single().Eq("id", strId).Execute(&title)
+	var resId map[string]interface{}
+	err := u.client.DB.From("publication_requests").Select("id").Single().Eq("id", strId).Execute(&resId)
 	if err != nil {
 		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
 			return helper.ErrPublicationRequestNotFound
@@ -693,6 +662,310 @@ func (u *PublicationRepository) DeletePublicationRequestById(id int) error {
 
 	//requests?
 	err := u.client.DB.From("publication_requests").Delete().Eq("id", strId).Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsPaperFragmentsExist() error {
+	var res []map[string]interface{}
+	err := u.client.DB.From("paper_fragments").Select("id").Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		return helper.ErrPaperFragmentNotFound
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) GetPaperFragments() ([]model.PaperFragment, error) {
+	var fragments []model.PaperFragment
+	err := u.client.DB.From("paper_fragments").Select("*").Execute(&fragments)
+	if err != nil {
+		return nil, err
+	}
+
+	return fragments, nil
+}
+
+func (u *PublicationRepository) GetPaperFragmentById(id int) (model.PaperFragment, error) {
+	stringId := strconv.Itoa(id)
+	var fragment model.PaperFragment
+	err := u.client.DB.From("paper_fragments").Select("*").Single().Eq("id", stringId).Execute(&fragment)
+	if err != nil {
+		return model.PaperFragment{}, err
+	}
+
+	return fragment, nil
+}
+
+func (u *PublicationRepository) IsPaperFragmentExists(id int) error {
+	strId := strconv.Itoa(id)
+	var rowId map[string]interface{}
+	err := u.client.DB.From("paper_fragments").Select("id").Single().Eq("id", strId).Execute(&rowId)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrPaperFragmentNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsPaperFragmentCategoryExists(categoryId int) error {
+	strCategoryId := strconv.Itoa(categoryId)
+	var id map[string]interface{}
+	err := u.client.DB.From("fragment_categories").Select("id").Single().Eq("id", strCategoryId).Execute(&id)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrCategoryNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) AddPaperFragment(fragment model.PaperFragment) error {
+	var empty []map[string]interface{}
+
+	err := u.client.DB.From("paper_fragments").Insert(map[string]interface{}{
+		"content":              fragment.Content,
+		"created_at":           fragment.CreatedAt,
+		"updated_at":           fragment.UpdatedAt,
+		"paper_id":             fragment.PaperId,
+		"fragment_category_id": fragment.FragmentCategoryId,
+	}).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) UpdatePaperFragment(fragment model.UpdatedPaperFragment) error {
+	var empty []map[string]interface{}
+	id := strconv.Itoa(fragment.Id)
+
+	err := u.client.DB.From("paper_fragments").Update(map[string]interface{}{
+		"content":              fragment.Content,
+		"created_at":           fragment.CreatedAt,
+		"updated_at":           fragment.UpdatedAt,
+		"paper_id":             fragment.PaperId,
+		"fragment_category_id": fragment.FragmentCategoryId,
+	}).Eq("id", id).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsPublicationRequestsExist() error {
+	var res []map[string]interface{}
+	err := u.client.DB.From("publication_requests").Select("id").Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		return helper.ErrPublicationRequestNotFound
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) GetPublicationRequests() ([]model.PublicationRequest, error) {
+	var requests []model.PublicationRequest
+	err := u.client.DB.From("publication_requests").Select("*").Execute(&requests)
+	if err != nil {
+		return nil, err
+	}
+
+	return requests, nil
+}
+
+func (u *PublicationRepository) GetPublicationRequestById(id int) (model.PublicationRequest, error) {
+	stringId := strconv.Itoa(id)
+	var request model.PublicationRequest
+	err := u.client.DB.From("publication_requests").Select("*").Single().Eq("id", stringId).Execute(&request)
+	if err != nil {
+		return model.PublicationRequest{}, err
+	}
+
+	return request, nil
+}
+
+func (u *PublicationRepository) AddPublicationRequest(req model.PublicationRequest) error {
+	var empty []map[string]interface{}
+
+	err := u.client.DB.From("publication_requests").Insert(map[string]interface{}{
+		"paper_url":           req.PaperURL,
+		"cover_letter_url":    req.CoverLetterURL,
+		"approval_letter_url": req.ApprovalLetterURL,
+		"status":              req.Status,
+		"metadata_id":         req.MetadataID,
+		"reference_format_id": req.ReferenceFormatID,
+		"requester_id":        req.RequesterID,
+	}).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) UpdatePublicationRequest(req model.UpdatedPublicationRequest) error {
+	var empty []map[string]interface{}
+	id := strconv.Itoa(req.Id)
+
+	err := u.client.DB.From("publication_requests").Update(map[string]interface{}{
+		"paper_url":           req.PaperURL,
+		"cover_letter_url":    req.CoverLetterURL,
+		"approval_letter_url": req.ApprovalLetterURL,
+		"status":              req.Status,
+		"metadata_id":         req.MetadataID,
+		"reference_format_id": req.ReferenceFormatID,
+		"requester_id":        req.RequesterID,
+	}).Eq("id", id).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsMetadataExists(id int) error {
+	strId := strconv.Itoa(id)
+	var resId map[string]interface{}
+	err := u.client.DB.From("metadata").Select("id").Single().Eq("id", strId).Execute(&resId)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrMetadataNotFound
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsMetadatasExist() error {
+	var res []map[string]interface{}
+	err := u.client.DB.From("metadata").Select("id").Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	if len(res) == 0 {
+		return helper.ErrMetadataNotFound
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsReferenceFormatExists(formatId int) error {
+	strFormatId := strconv.Itoa(formatId)
+	var id map[string]interface{}
+	err := u.client.DB.From("reference_formats").Select("id").Single().Eq("id", strFormatId).Execute(&id)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrReferenceFormatNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) IsRequesterExists(id int) error {
+	strId := strconv.Itoa(id)
+	var username map[string]interface{}
+	err := u.client.DB.From("users").Select("username").Single().Eq("id", strId).Execute(&username)
+	if err != nil {
+		if strings.Contains(err.Error(), "JSON object requested, multiple (or no) rows returned") {
+			return helper.ErrRequesterNotFound
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) GetMetadatas() ([]model.Metadata, error) {
+	var metadatas []model.Metadata
+	err := u.client.DB.From("metadata").Select("*").Execute(&metadatas)
+	if err != nil {
+		return nil, err
+	}
+
+	return metadatas, nil
+}
+
+func (u *PublicationRepository) GetMetadataById(id int) (model.Metadata, error) {
+	stringId := strconv.Itoa(id)
+	var metadata model.Metadata
+	err := u.client.DB.From("metadata").Select("*").Single().Eq("id", stringId).Execute(&metadata)
+	if err != nil {
+		return model.Metadata{}, err
+	}
+
+	return metadata, nil
+}
+
+func (u *PublicationRepository) DeleteMetadataById(id int) error {
+	strId := strconv.Itoa(id)
+	var res []map[string]interface{}
+
+	//requests?
+	err := u.client.DB.From("metadata").Delete().Eq("id", strId).Execute(&res)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) AddMetadata(metadata model.Metadata) error {
+	var empty []map[string]interface{}
+
+	err := u.client.DB.From("metadata").Insert(map[string]interface{}{
+		"title":          metadata.Title,
+		"abstract":       metadata.Abstract,
+		"keyword":        metadata.Keyword,
+		"contributor":    metadata.Contributor,
+		"date_sent":      metadata.DateSent,
+		"reference":      metadata.Reference,
+		"doi":            metadata.DOI,
+		"attachment_url": metadata.AttachmentURL,
+	}).Execute(&empty)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (u *PublicationRepository) UpdateMetadata(metadata model.UpdatedMetadata) error {
+	var empty []map[string]interface{}
+	id := strconv.Itoa(metadata.Id)
+
+	err := u.client.DB.From("metadata").Update(map[string]interface{}{
+		"title":          metadata.Title,
+		"abstract":       metadata.Abstract,
+		"keyword":        metadata.Keyword,
+		"contributor":    metadata.Contributor,
+		"date_sent":      metadata.DateSent,
+		"reference":      metadata.Reference,
+		"doi":            metadata.DOI,
+		"attachment_url": metadata.AttachmentURL,
+	}).Eq("id", id).Execute(&empty)
 	if err != nil {
 		return err
 	}

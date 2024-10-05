@@ -27,6 +27,7 @@ func (u *UserRepository) CreateUser(user model.User) error {
 		"username":      user.Username,
 		"password_hash": user.PasswordHash,
 		"email":         user.Email,
+		"institution":   user.Institution,
 	}).Execute(&empty)
 	if err != nil {
 		return err

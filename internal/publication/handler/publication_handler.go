@@ -1,6 +1,8 @@
 package handler
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"github.com/gofiber/fiber/v2"
+)
 
 type PublicationHandlerInstance interface {
 	GetPublications(c *fiber.Ctx) error
@@ -22,4 +24,22 @@ type PublicationHandlerInstance interface {
 	AddCompetition(c *fiber.Ctx) error
 	UpdateCompetition(c *fiber.Ctx) error
 	DeleteCompetitionById(c *fiber.Ctx) error
+
+	GetPaperFragments(c *fiber.Ctx) error
+	GetPaperFragmentById(c *fiber.Ctx) error
+	AddPaperFragment(c *fiber.Ctx) error
+	UpdatePaperFragment(c *fiber.Ctx) error
+	DeletePaperFragmentById(c *fiber.Ctx) error
+
+	GetPublicationRequests(c *fiber.Ctx) error
+	GetPublicationRequestById(c *fiber.Ctx) error
+	AddPublicationRequest(c *fiber.Ctx) error
+	UpdatePublicationRequest(c *fiber.Ctx) error
+	DeletePublicationRequestById(c *fiber.Ctx) error
+
+	GetMetadatas(c *fiber.Ctx) error
+	GetMetadataById(c *fiber.Ctx) error
+	AddMetadata(c *fiber.Ctx) error
+	UpdateMetadata(c *fiber.Ctx) error
+	DeleteMetadataById(c *fiber.Ctx) error
 }

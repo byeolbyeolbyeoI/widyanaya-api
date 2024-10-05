@@ -11,6 +11,7 @@ type (
 	Config struct {
 		Server   *Server
 		Database *Database
+		JWT      *JWT
 	}
 
 	Server struct {
@@ -20,6 +21,10 @@ type (
 	Database struct {
 		URL string
 		Key string
+	}
+
+	JWT struct {
+		Secret string
 	}
 )
 

@@ -12,7 +12,16 @@ type FragmentCategory struct {
 
 type PaperFragment struct {
 	Id                 int       `json:"id"`
-	Context            string    `json:"context" validate:"required"`
+	Content            string    `json:"content" validate:"required"`
+	CreatedAt          time.Time `json:"created_at" validate:"required"`
+	UpdatedAt          time.Time `json:"updated_at"`
+	FragmentCategoryId int       `json:"fragment_category_id" validate:"required"`
+	PaperId            int       `json:"paper_id" validate:"required"`
+}
+
+type UpdatedPaperFragment struct {
+	Id                 int       `json:"id" validate:"required"`
+	Content            string    `json:"content" validate:"required"`
 	CreatedAt          time.Time `json:"created_at" validate:"required"`
 	UpdatedAt          time.Time `json:"updated_at"`
 	FragmentCategoryId int       `json:"fragment_category_id" validate:"required"`

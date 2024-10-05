@@ -29,7 +29,7 @@ func NewServer(app *fiber.App, conf *config.Config, db *supa.Client) ServerInsta
 func (s *Server) Start() {
 	userRepoInstance := userRepo.NewUserRepository(s.db, s.helper)
 	userServiceInstance := userService.NewUserService(userRepoInstance, s.helper)
-	userHandlerInstance := userHandler.NewUserHandler(userServiceInstance, s.helper)
+	userHandlerInstance := userHandler.NewUserHandler(userServiceInstance, s.helper, s.config)
 
 	publicationRepoInstance := publicationRepo.NewPublicationRepository(s.db, s.helper)
 	publicationServiceInstance := publicationService.NewPublicationService(publicationRepoInstance, s.helper)

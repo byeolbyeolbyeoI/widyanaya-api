@@ -26,8 +26,13 @@ type PublicationServiceInstance interface {
 	UpdatePaper(model.UpdatedPaper) error
 	DeletePaperById(int) error
 
+	IsPaperFragmentsExist() error
+	GetPaperFragments() ([]model.PaperFragment, error)
+	GetPaperFragmentById(int) (model.PaperFragment, error)
+	IsPaperFragmentCategoryExists(int) error
 	IsPaperFragmentExists(int) error
 	AddPaperFragment(model.PaperFragment) error
+	UpdatePaperFragment(model.UpdatedPaperFragment) error
 	DeletePaperFragmentById(int) error
 
 	IsCompetitionExists(int) error
@@ -42,5 +47,20 @@ type PublicationServiceInstance interface {
 	DeleteCompetitionById(int) error
 
 	IsPublicationRequestExists(int) error
+	IsPublicationRequestsExist() error
+	IsReferenceFormatExists(int) error
+	IsRequesterExists(int) error
+	GetPublicationRequests() ([]model.PublicationRequest, error)
+	GetPublicationRequestById(int) (model.PublicationRequest, error)
+	AddPublicationRequest(model.PublicationRequest) error
+	UpdatePublicationRequest(model.UpdatedPublicationRequest) error
 	DeletePublicationRequestById(int) error
+
+	IsMetadataExists(int) error
+	IsMetadatasExist() error
+	GetMetadatas() ([]model.Metadata, error)
+	AddMetadata(model.Metadata) error
+	UpdateMetadata(model.UpdatedMetadata) error
+	GetMetadataById(int) (model.Metadata, error)
+	DeleteMetadataById(int) error
 }

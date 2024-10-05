@@ -501,3 +501,436 @@ func (p *PublicationHandler) DeleteCompetitionById(c *fiber.Ctx) error {
 
 	return p.helper.Response(c, fiber.StatusOK, true, "competition deleted successfully", nil)
 }
+
+func (p *PublicationHandler) GetPaperFragments(c *fiber.Ctx) error {
+	err := p.service.IsPaperFragmentsExist()
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperFragmentNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	fragments, err := p.service.GetPaperFragments()
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "paper fragments retrieved successfully", fragments)
+}
+
+func (p *PublicationHandler) GetPaperFragmentById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+	err = p.service.IsPaperFragmentExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperFragmentNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	fragment, err := p.service.GetPaperFragmentById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "fragment retrieved successfully", fragment)
+}
+
+func (p *PublicationHandler) AddPaperFragment(c *fiber.Ctx) error {
+	var fragment model.PaperFragment
+	err := c.BodyParser(&fragment)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(fragment); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	err = p.service.IsPaperExists(fragment.PaperId)
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return err
+	}
+
+	err = p.service.IsPaperFragmentCategoryExists(fragment.FragmentCategoryId)
+	if err != nil {
+		if errors.Is(err, helper.ErrCategoryNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return err
+	}
+
+	// cek if exist if ya if if
+	err = p.service.AddPaperFragment(fragment)
+	if err != nil { // better err handler please
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "paper fragment added successfully", nil)
+}
+
+func (p *PublicationHandler) UpdatePaperFragment(c *fiber.Ctx) error {
+	var fragment model.UpdatedPaperFragment
+	err := c.BodyParser(&fragment)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(fragment); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	err = p.service.IsPaperFragmentExists(fragment.Id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperFragmentNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsPaperExists(fragment.PaperId)
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return err
+	}
+
+	err = p.service.IsPaperFragmentCategoryExists(fragment.FragmentCategoryId)
+	if err != nil {
+		if errors.Is(err, helper.ErrCategoryNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	// cek if exist if ya if if
+	err = p.service.UpdatePaperFragment(fragment)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "paper fragment updated successfully", fragment)
+}
+
+func (p *PublicationHandler) DeletePaperFragmentById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+
+	err = p.service.IsPaperFragmentExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPaperFragmentNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.DeletePaperFragmentById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "paper fragment deleted successfully", nil)
+}
+
+func (p *PublicationHandler) GetPublicationRequests(c *fiber.Ctx) error {
+	err := p.service.IsPublicationRequestsExist()
+	if err != nil {
+		if errors.Is(err, helper.ErrPublicationRequestNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	requests, err := p.service.GetPublicationRequests()
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "publication requests retrieved successfully", requests)
+}
+
+func (p *PublicationHandler) GetPublicationRequestById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsPublicationRequestExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPublicationRequestNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	request, err := p.service.GetPublicationRequestById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "publication request retrieved successfully", request)
+}
+
+func (p *PublicationHandler) DeletePublicationRequestById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+
+	err = p.service.IsPublicationRequestExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPublicationRequestNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.DeletePublicationRequestById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "publication request deleted successfully", nil)
+}
+
+func (p *PublicationHandler) AddPublicationRequest(c *fiber.Ctx) error {
+	var request model.PublicationRequest
+	err := c.BodyParser(&request)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(request); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	// is metadata id
+	// reference_format_id
+	//requester id
+	err = p.service.IsMetadataExists(request.MetadataID)
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsReferenceFormatExists(request.ReferenceFormatID)
+	if err != nil {
+		if errors.Is(err, helper.ErrReferenceFormatNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsRequesterExists(request.RequesterID)
+	if err != nil {
+		if errors.Is(err, helper.ErrRequesterNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.AddPublicationRequest(request)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "publication request added successfully", request)
+
+}
+
+func (p *PublicationHandler) UpdatePublicationRequest(c *fiber.Ctx) error {
+	var req model.UpdatedPublicationRequest
+	err := c.BodyParser(&req)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(req); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	err = p.service.IsPublicationRequestExists(req.Id)
+	if err != nil {
+		if errors.Is(err, helper.ErrPublicationRequestNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsReferenceFormatExists(req.ReferenceFormatID)
+	if err != nil {
+		if errors.Is(err, helper.ErrReferenceFormatNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsMetadataExists(req.MetadataID)
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsRequesterExists(req.RequesterID)
+	if err != nil {
+		if errors.Is(err, helper.ErrRequesterNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.UpdatePublicationRequest(req)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "publication request updated successfully", req)
+}
+
+func (p *PublicationHandler) DeleteMetadataById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+
+	err = p.service.IsMetadataExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.DeleteMetadataById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "metadata deleted successfully", nil)
+}
+
+func (p *PublicationHandler) GetMetadatas(c *fiber.Ctx) error {
+	err := p.service.IsMetadatasExist()
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	metadatas, err := p.service.GetMetadatas()
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "metadata retrieved successfully", metadatas)
+}
+
+func (p *PublicationHandler) GetMetadataById(c *fiber.Ctx) error {
+	strId := c.Params("id")
+	id, err := strconv.Atoi(strId)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.IsMetadataExists(id)
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	metadata, err := p.service.GetMetadataById(id)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "metadata retrieved successfully", metadata)
+}
+
+func (p *PublicationHandler) AddMetadata(c *fiber.Ctx) error {
+	var metadata model.Metadata
+	err := c.BodyParser(&metadata)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(metadata); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	// cek if exist if ya if if
+	err = p.service.AddMetadata(metadata)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "metadata added successfully", metadata)
+}
+
+func (p *PublicationHandler) UpdateMetadata(c *fiber.Ctx) error {
+	var metadata model.UpdatedMetadata
+	err := c.BodyParser(&metadata)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	if errs := p.helper.Validate(metadata); len(errs) > 0 && errs[0].Error {
+		errMsg := p.helper.HandleValidationError(errs)
+
+		return p.helper.Response(c, fiber.StatusBadRequest, false, errMsg, nil)
+	}
+
+	err = p.service.IsMetadataExists(metadata.Id)
+	if err != nil {
+		if errors.Is(err, helper.ErrMetadataNotFound) {
+			return p.helper.Response(c, fiber.StatusNotFound, false, err.Error(), nil)
+		}
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	err = p.service.UpdateMetadata(metadata)
+	if err != nil {
+		return p.helper.Response(c, fiber.StatusInternalServerError, false, err.Error(), nil)
+	}
+
+	return p.helper.Response(c, fiber.StatusOK, true, "metadata updated successfully", metadata)
+}
